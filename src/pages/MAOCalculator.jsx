@@ -9,7 +9,7 @@ import { useRehabEstimator } from '../contexts/RehabEstimatorContext'
 import { useMAOCalculator } from '../contexts/MAOCalculatorContext'
 import { useToast } from '../contexts/ToastContext'
 
-const { FiDollarSign, FiTarget, FiTrendingUp, FiRefreshCw, FiSave, FiPercent } = FiIcons
+const { FiDollarSign, FiTarget, FiTrendingUp, FiRefreshCw, FiSave } = FiIcons
 
 const MAOCalculator = () => {
   const { currentProperty } = useProperty()
@@ -229,7 +229,6 @@ const MAOCalculator = () => {
               >
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    <SafeIcon icon={FiPercent} className="w-5 h-5 text-gray-600 mr-1" />
                     <span className="text-lg font-bold">{result.percentage}%</span>
                   </div>
                   <h4 className="font-medium text-gray-900 mb-1 italic">{result.label}</h4>
