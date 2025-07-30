@@ -3,8 +3,9 @@ import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
 import SafeIcon from '../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
+import NavigationButton from '../components/Common/NavigationButton'
 
-const { FiTarget, FiDollarSign, FiHome, FiCalendar, FiTrendingUp } = FiIcons
+const { FiTarget, FiDollarSign, FiHome, FiCalendar, FiTrendingUp, FiCreditCard } = FiIcons
 
 const FreedomCalculator = () => {
   const [formData, setFormData] = useState({
@@ -16,12 +17,10 @@ const FreedomCalculator = () => {
 
   const [results, setResults] = useState(null)
   const [timelineData, setTimelineData] = useState([])
+  const [hasCalculation, setHasCalculation] = useState(false)
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setFormData(prev => ({ ...prev, [field]: value }))
     calculateFreedom({ ...formData, [field]: value })
   }
 
@@ -84,6 +83,7 @@ const FreedomCalculator = () => {
     })
 
     setTimelineData(timeline)
+    setHasCalculation(true)
   }
 
   React.useEffect(() => {
@@ -126,14 +126,16 @@ const FreedomCalculator = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Freedom Goals</h2>
-            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Desired Monthly Passive Income
                 </label>
                 <div className="relative">
-                  <SafeIcon icon={FiDollarSign} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <SafeIcon 
+                    icon={FiDollarSign} 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
+                  />
                   <input
                     type="number"
                     value={formData.desiredIncome}
@@ -144,13 +146,15 @@ const FreedomCalculator = () => {
                 </div>
                 <p className="text-sm text-gray-500 mt-1">Your target monthly passive income</p>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Average Cash Flow Per Property
                 </label>
                 <div className="relative">
-                  <SafeIcon icon={FiDollarSign} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <SafeIcon 
+                    icon={FiDollarSign} 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
+                  />
                   <input
                     type="number"
                     value={formData.avgCashFlow}
@@ -161,13 +165,15 @@ const FreedomCalculator = () => {
                 </div>
                 <p className="text-sm text-gray-500 mt-1">Expected monthly cash flow per property</p>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Current Properties Owned
                 </label>
                 <div className="relative">
-                  <SafeIcon icon={FiHome} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <SafeIcon 
+                    icon={FiHome} 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
+                  />
                   <input
                     type="number"
                     value={formData.currentProperties}
@@ -178,13 +184,15 @@ const FreedomCalculator = () => {
                 </div>
                 <p className="text-sm text-gray-500 mt-1">Properties you currently own</p>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Properties Acquired Per Year
                 </label>
                 <div className="relative">
-                  <SafeIcon icon={FiCalendar} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <SafeIcon 
+                    icon={FiCalendar} 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
+                  />
                   <input
                     type="number"
                     value={formData.propertiesPerYear}
@@ -202,25 +210,21 @@ const FreedomCalculator = () => {
           {results && (
             <div className="mt-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-sm p-6 text-white">
               <h3 className="text-lg font-semibold mb-4">Freedom Summary</h3>
-              
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span>Properties Needed:</span>
                   <span className="font-bold text-xl">{results.propertiesNeeded}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span>Additional Properties:</span>
                   <span className="font-semibold">{results.additionalProperties}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span>Years to Freedom:</span>
                   <span className="font-semibold">
                     {results.yearsToFreedom === Infinity ? 'N/A' : `${results.yearsToFreedom} years`}
                   </span>
                 </div>
-                
                 <div className="border-t border-white/20 pt-3 mt-3">
                   <div className="flex justify-between">
                     <span>Current Progress:</span>
@@ -303,39 +307,38 @@ const FreedomCalculator = () => {
           {timelineData.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Path to Freedom Timeline</h2>
-              
               <div style={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer>
                   <LineChart data={timelineData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="year" 
-                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                      label={{ value: 'Years', position: 'insideBottom', offset: -5 }} 
                     />
                     <YAxis 
-                      yAxisId="left"
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                      yAxisId="left" 
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} 
                     />
                     <YAxis 
                       yAxisId="right" 
-                      orientation="right"
-                      domain={[0, 'dataMax']}
+                      orientation="right" 
+                      domain={[0, 'dataMax']} 
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar 
-                      yAxisId="right"
+                      yAxisId="right" 
                       dataKey="properties" 
                       fill="#3B82F6" 
-                      opacity={0.3}
-                      name="Properties"
+                      opacity={0.3} 
+                      name="Properties" 
                     />
                     <Line 
-                      yAxisId="left"
+                      yAxisId="left" 
                       type="monotone" 
                       dataKey="monthlyIncome" 
                       stroke="#10B981" 
-                      strokeWidth={3}
-                      name="Monthly Income"
+                      strokeWidth={3} 
+                      name="Monthly Income" 
                       dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
                     />
                   </LineChart>
@@ -348,7 +351,6 @@ const FreedomCalculator = () => {
           {results && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Progress Breakdown</h2>
-              
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -362,7 +364,6 @@ const FreedomCalculator = () => {
                     />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="font-medium text-gray-900 mb-2">Current Status</h3>
@@ -379,7 +380,6 @@ const FreedomCalculator = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="font-medium text-gray-900 mb-2">Freedom Target</h3>
                     <div className="space-y-2 text-sm">
@@ -426,6 +426,16 @@ const FreedomCalculator = () => {
           </div>
         </div>
       </div>
+
+      {/* Navigation Button */}
+      {hasCalculation && (
+        <NavigationButton
+          nextStep="loan-comparison"
+          nextLabel="Go to Loan Comparison"
+          description="Compare different loan options and analyze costs"
+          icon={FiCreditCard}
+        />
+      )}
     </div>
   )
 }

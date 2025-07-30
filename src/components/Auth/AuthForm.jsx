@@ -24,17 +24,20 @@ const AuthForm = () => {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     try {
       if (isSignUp) {
         if (password !== confirmPassword) {
           throw new Error('Passwords do not match')
         }
+
         const { error } = await signUp(email, password, {
           first_name: firstName,
           last_name: lastName,
         })
+
         if (error) throw error
-        
+
         // Show account created message
         setAccountCreated(true)
         setIsSignUp(false)
@@ -51,7 +54,7 @@ const AuthForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background-DEFAULT via-white to-background-DEFAULT flex items-center justify-center px-4">
-      <motion.div 
+      <motion.div
         className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -59,10 +62,13 @@ const AuthForm = () => {
       >
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <img 
-            src="/src/assets/fulllogo_transparent.png" 
-            alt="The Brrrrothas Logo" 
+          <img
+            src="/fulllogo_transparent.png"
+            alt="The Brrrrothas Logo"
             className="h-16 mx-auto mb-4"
+            onError={(e) => {
+              e.target.style.display = 'none'
+            }}
           />
           <h1 className="text-2xl font-bold text-primary">The Brrrrothas</h1>
           <p className="text-text-secondary mt-1">Real Estate Investment Toolkit</p>
@@ -113,9 +119,9 @@ const AuthForm = () => {
               Email Address
             </label>
             <div className="relative">
-              <SafeIcon
-                icon={FiMail}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
+              <SafeIcon 
+                icon={FiMail} 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
               />
               <input
                 type="email"
@@ -133,9 +139,9 @@ const AuthForm = () => {
               Password
             </label>
             <div className="relative">
-              <SafeIcon
-                icon={FiLock}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
+              <SafeIcon 
+                icon={FiLock} 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
               />
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -161,9 +167,9 @@ const AuthForm = () => {
                 Confirm Password
               </label>
               <div className="relative">
-                <SafeIcon
-                  icon={FiLock}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
+                <SafeIcon 
+                  icon={FiLock} 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
                 />
                 <input
                   type={showPassword ? 'text' : 'password'}

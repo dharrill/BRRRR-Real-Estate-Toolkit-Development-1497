@@ -20,28 +20,8 @@ export const RehabEstimatorProvider = ({ children }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // City templates for rehab costs
-  const cityTemplates = {
-    'Atlanta, GA': {
-      'Kitchen': 14000,
-      'Bathrooms': 7500,
-      'Flooring': 5500,
-      'Interior Paint': 3200,
-      'Exterior Paint': 4500,
-      'Roof': 11000,
-      'HVAC': 6500,
-      'Electrical': 4200,
-      'Plumbing': 3800,
-      'Windows': 450,
-      'Doors': 280,
-      'Landscaping': 3000,
-      'Garage': 2500,
-      'Driveway': 4000,
-      'Foundation': 8000,
-      'Permits': 1800,
-    },
-    // Add more city templates here
-  }
+  // Store for rehab estimates - structured by property ID
+  const [estimatesStore, setEstimatesStore] = useState({})
 
   // Fetch rehab estimates for the current property
   const fetchRehabEstimates = async () => {
@@ -51,15 +31,42 @@ export const RehabEstimatorProvider = ({ children }) => {
     setError(null)
     
     try {
+      // Check if we have estimates in Supabase
       const { data, error } = await supabase
         .from('rehab_estimates')
         .select('*')
         .eq('property_id', currentProperty.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
       if (error) throw error
       
-      setRehabEstimates(data || [])
+      // If we have data from Supabase, use it
+      if (data && data.length > 0) {
+        // Parse JSON fields if they're stored as strings
+        const parsedData = data.map(estimate => ({
+          ...estimate,
+          line_items: typeof estimate.line_items === 'string' 
+            ? JSON.parse(estimate.line_items) 
+            : estimate.line_items
+        }))
+        
+        setRehabEstimates(parsedData)
+        
+        // Update the local store
+        setEstimatesStore(prev => ({
+          ...prev,
+          [currentProperty.id]: parsedData
+        }))
+      } 
+      // If no data in Supabase, check our local store
+      else if (estimatesStore[currentProperty.id]) {
+        setRehabEstimates(estimatesStore[currentProperty.id])
+      }
+      // If nothing anywhere, set empty array
+      else {
+        setRehabEstimates([])
+      }
     } catch (err) {
       console.error('Error fetching rehab estimates:', err)
       setError(err.message)
@@ -73,23 +80,42 @@ export const RehabEstimatorProvider = ({ children }) => {
     if (!user || !currentProperty) {
       return { error: 'User or property not found' }
     }
-    
+
     try {
+      // Prepare data for insertion
+      const dataToSave = {
+        property_id: currentProperty.id,
+        user_id: user.id,
+        input_mode: estimateData.input_mode,
+        total_amount: estimateData.total_amount,
+        selected_city: estimateData.selected_city,
+        contingency_percentage: estimateData.contingency_percentage,
+        line_items: estimateData.line_items,
+        subtotal: estimateData.subtotal,
+        total: estimateData.total,
+        created_at: new Date().toISOString()
+      }
+
+      // Save to Supabase
       const { data, error } = await supabase
         .from('rehab_estimates')
-        .insert([{
-          property_id: currentProperty.id,
-          user_id: user.id,
-          ...estimateData
-        }])
+        .insert([dataToSave])
         .select()
-      
+
       if (error) throw error
-      
+
       // Update local state
-      setRehabEstimates(prev => [data[0], ...prev])
-      
-      return { data: data[0], error: null }
+      const newEstimate = data[0]
+      const updatedEstimates = [newEstimate, ...rehabEstimates]
+      setRehabEstimates(updatedEstimates)
+
+      // Update local store
+      setEstimatesStore(prev => ({
+        ...prev,
+        [currentProperty.id]: updatedEstimates
+      }))
+
+      return { data: newEstimate, error: null }
     } catch (err) {
       console.error('Error saving rehab estimate:', err)
       return { data: null, error: err.message }
@@ -99,19 +125,27 @@ export const RehabEstimatorProvider = ({ children }) => {
   // Update a rehab estimate
   const updateRehabEstimate = async (id, updates) => {
     try {
+      // Update in Supabase
       const { data, error } = await supabase
         .from('rehab_estimates')
         .update(updates)
         .eq('id', id)
         .select()
-      
+
       if (error) throw error
-      
+
       // Update local state
-      setRehabEstimates(prev =>
-        prev.map(estimate => estimate.id === id ? data[0] : estimate)
+      const updatedEstimates = rehabEstimates.map(estimate => 
+        estimate.id === id ? data[0] : estimate
       )
-      
+      setRehabEstimates(updatedEstimates)
+
+      // Update local store
+      setEstimatesStore(prev => ({
+        ...prev,
+        [currentProperty.id]: updatedEstimates
+      }))
+
       return { data: data[0], error: null }
     } catch (err) {
       console.error('Error updating rehab estimate:', err)
@@ -122,16 +156,24 @@ export const RehabEstimatorProvider = ({ children }) => {
   // Delete a rehab estimate
   const deleteRehabEstimate = async (id) => {
     try {
+      // Delete from Supabase
       const { error } = await supabase
         .from('rehab_estimates')
         .delete()
         .eq('id', id)
-      
+
       if (error) throw error
-      
+
       // Update local state
-      setRehabEstimates(prev => prev.filter(estimate => estimate.id !== id))
-      
+      const updatedEstimates = rehabEstimates.filter(estimate => estimate.id !== id)
+      setRehabEstimates(updatedEstimates)
+
+      // Update local store
+      setEstimatesStore(prev => ({
+        ...prev,
+        [currentProperty.id]: updatedEstimates
+      }))
+
       return { error: null }
     } catch (err) {
       console.error('Error deleting rehab estimate:', err)
@@ -152,7 +194,6 @@ export const RehabEstimatorProvider = ({ children }) => {
     rehabEstimates,
     loading,
     error,
-    cityTemplates,
     fetchRehabEstimates,
     saveRehabEstimate,
     updateRehabEstimate,

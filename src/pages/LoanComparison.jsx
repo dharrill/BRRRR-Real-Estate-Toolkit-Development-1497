@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import SafeIcon from '../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
+import NavigationButton from '../components/Common/NavigationButton'
 
-const { FiCreditCard, FiDollarSign, FiPercent, FiTrendingDown, FiPlus, FiMinus } = FiIcons
+const { FiCreditCard, FiDollarSign, FiPercent, FiTrendingDown, FiPlus, FiMinus, FiHome } = FiIcons
 
 const LoanComparison = () => {
   const [loans, setLoans] = useState([
@@ -22,6 +23,8 @@ const LoanComparison = () => {
     }
   ])
 
+  const [hasComparison, setHasComparison] = useState(false)
+
   const addLoan = () => {
     const newLoan = {
       id: Date.now(),
@@ -37,6 +40,7 @@ const LoanComparison = () => {
       buyDownCost: '0'
     }
     setLoans([...loans, newLoan])
+    setHasComparison(true)
   }
 
   const removeLoan = (id) => {
@@ -49,6 +53,7 @@ const LoanComparison = () => {
     setLoans(loans.map(loan => 
       loan.id === id ? { ...loan, [field]: value } : loan
     ))
+    setHasComparison(true)
   }
 
   const calculateLoanMetrics = (loan) => {
@@ -82,7 +87,6 @@ const LoanComparison = () => {
     const originalMonthlyPayment = principal > 0 && annualRate > 0 ? 
       (principal * (annualRate / 100 / 12) * Math.pow(1 + (annualRate / 100 / 12), numPayments)) / 
       (Math.pow(1 + (annualRate / 100 / 12), numPayments) - 1) : 0
-
     const monthlySavings = originalMonthlyPayment - monthlyPayment
     const breakEvenMonths = monthlySavings > 0 ? buyDownCost / monthlySavings : Infinity
 
@@ -119,7 +123,6 @@ const LoanComparison = () => {
           <h1 className="text-2xl font-bold text-gray-900">Loan Comparison Tool</h1>
           <p className="text-gray-600 mt-1">Compare different loan options and analyze costs</p>
         </div>
-        
         <button
           onClick={addLoan}
           className="mt-4 sm:mt-0 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
@@ -133,7 +136,6 @@ const LoanComparison = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {loans.map((loan, index) => {
           const metrics = calculateLoanMetrics(loan)
-          
           return (
             <motion.div
               key={loan.id}
@@ -169,7 +171,6 @@ const LoanComparison = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Interest Rate (%)
@@ -184,7 +185,6 @@ const LoanComparison = () => {
                     />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -201,7 +201,6 @@ const LoanComparison = () => {
                       <option value="30">30 Years</option>
                     </select>
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       LTV Ratio (%)
@@ -215,7 +214,6 @@ const LoanComparison = () => {
                     />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -230,7 +228,6 @@ const LoanComparison = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Closing Fees
@@ -244,7 +241,6 @@ const LoanComparison = () => {
                     />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Down Payment
@@ -261,7 +257,6 @@ const LoanComparison = () => {
                 {/* Rate Buy-Down Section */}
                 <div className="border-t border-gray-200 pt-4">
                   <h3 className="text-sm font-medium text-gray-900 mb-3">Rate Buy-Down (Optional)</h3>
-                  
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -276,7 +271,6 @@ const LoanComparison = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
-                    
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Buy-Down Cost
@@ -296,7 +290,6 @@ const LoanComparison = () => {
               {/* Loan Metrics */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="font-medium text-gray-900 mb-3">Loan Analysis</h3>
-                
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Monthly Payment:</span>
@@ -304,21 +297,18 @@ const LoanComparison = () => {
                       {formatCurrency(metrics.monthlyPayment)}
                     </p>
                   </div>
-                  
                   <div>
                     <span className="text-gray-600">Total Interest:</span>
                     <p className="font-semibold text-red-600">
                       {formatCurrency(metrics.totalInterest)}
                     </p>
                   </div>
-                  
                   <div>
                     <span className="text-gray-600">Upfront Costs:</span>
                     <p className="font-semibold text-orange-600">
                       {formatCurrency(metrics.totalUpfrontCosts)}
                     </p>
                   </div>
-                  
                   <div>
                     <span className="text-gray-600">Total Loan Cost:</span>
                     <p className="font-semibold text-purple-600">
@@ -337,12 +327,10 @@ const LoanComparison = () => {
                           {formatCurrency(metrics.monthlySavings)}
                         </p>
                       </div>
-                      
                       <div>
                         <span className="text-gray-600">Break-Even:</span>
                         <p className="font-semibold text-blue-600">
-                          {metrics.breakEvenMonths === Infinity ? 'N/A' : 
-                           `${Math.round(metrics.breakEvenMonths)} months`}
+                          {metrics.breakEvenMonths === Infinity ? 'N/A' : `${Math.round(metrics.breakEvenMonths)} months`}
                         </p>
                       </div>
                     </div>
@@ -358,7 +346,6 @@ const LoanComparison = () => {
       {loans.length > 1 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Loan Comparison</h2>
-          
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -380,7 +367,7 @@ const LoanComparison = () => {
                     upfront: metrics.totalUpfrontCosts === Math.min(...loans.map(l => calculateLoanMetrics(l).totalUpfrontCosts)),
                     total: metrics.totalLoanCost === Math.min(...loans.map(l => calculateLoanMetrics(l).totalLoanCost))
                   }
-                  
+
                   return (
                     <tr key={loan.id} className="border-b border-gray-100">
                       <td className="py-3 px-4 font-medium text-gray-900">{loan.name}</td>
@@ -405,7 +392,6 @@ const LoanComparison = () => {
               </tbody>
             </table>
           </div>
-
           <div className="mt-4 text-xs text-gray-500">
             * Green highlighting indicates the best option for each metric
           </div>
@@ -415,6 +401,7 @@ const LoanComparison = () => {
       {/* Tips */}
       <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
         <h3 className="text-lg font-semibold text-blue-900 mb-3">Loan Comparison Tips</h3>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <h4 className="font-medium text-blue-800 mb-2">Consider All Costs</h4>
@@ -436,6 +423,17 @@ const LoanComparison = () => {
           </div>
         </div>
       </div>
+
+      {/* Navigation Button */}
+      {hasComparison && (
+        <NavigationButton
+          nextStep="dashboard"
+          nextLabel="Back to Dashboard"
+          description="Return to your property dashboard to start analyzing another property"
+          icon={FiHome}
+          variant="secondary"
+        />
+      )}
     </div>
   )
 }

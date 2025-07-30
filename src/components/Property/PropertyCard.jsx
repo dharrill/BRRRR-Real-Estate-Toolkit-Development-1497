@@ -1,14 +1,20 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import SafeIcon from '../../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
 import { useProperty } from '../../contexts/PropertyContext'
+import { useRehabEstimator } from '../../contexts/RehabEstimatorContext'
+import { useMAOCalculator } from '../../contexts/MAOCalculatorContext'
 
-const { FiMapPin, FiDollarSign, FiTrendingUp, FiEdit3, FiTrash2, FiShare2 } = FiIcons
+const { FiMapPin, FiDollarSign, FiTrendingUp, FiEdit3, FiTrash2, FiShare2, FiPlay, FiArrowRight } = FiIcons
 
 const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
-  const { currentProperty } = useProperty()
-  
+  const navigate = useNavigate()
+  const { currentProperty, setCurrentProperty } = useProperty()
+  const { rehabEstimates } = useRehabEstimator()
+  const { maoCalculations } = useMAOCalculator()
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -34,7 +40,53 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
     }
   }
 
+  // Determine workflow progress
+  const getWorkflowStatus = () => {
+    // Check if property is selected and get its data
+    const isSelected = currentProperty?.id === property.id
+    const hasRehab = isSelected && rehabEstimates.length > 0
+    const hasMAO = isSelected && maoCalculations.length > 0
+
+    if (!hasRehab) {
+      return {
+        nextStep: 'rehab-estimator',
+        nextLabel: 'Start Analysis',
+        icon: FiPlay,
+        description: 'Begin with rehab estimate'
+      }
+    } else if (!hasMAO) {
+      return {
+        nextStep: 'mao-calculator',
+        nextLabel: 'Calculate MAO',
+        icon: FiArrowRight,
+        description: 'Determine maximum offer'
+      }
+    } else {
+      return {
+        nextStep: 'property-analyzer',
+        nextLabel: 'Full Analysis',
+        icon: FiArrowRight,
+        description: 'Complete property analysis'
+      }
+    }
+  }
+
+  const handleStartAnalysis = (e) => {
+    e.stopPropagation()
+    
+    // Select the property first
+    setCurrentProperty(property)
+    
+    // Small delay to ensure property is selected before navigating
+    setTimeout(() => {
+      // Get next step and navigate
+      const workflowStatus = getWorkflowStatus()
+      navigate(`/${workflowStatus.nextStep}`)
+    }, 100)
+  }
+
   const isSelected = currentProperty?.id === property.id
+  const workflowStatus = getWorkflowStatus()
 
   return (
     <motion.div
@@ -65,8 +117,8 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
         <div className="flex items-center space-x-2">
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onShare(property);
+              e.stopPropagation()
+              onShare(property)
             }}
             className="p-2 text-gray-400 hover:text-primary hover:bg-primary-light/10 rounded-lg transition-colors"
           >
@@ -74,8 +126,8 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
           </button>
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onEdit(property);
+              e.stopPropagation()
+              onEdit(property)
             }}
             className="p-2 text-gray-400 hover:text-primary hover:bg-primary-light/10 rounded-lg transition-colors"
           >
@@ -83,8 +135,8 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
           </button>
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onDelete(property);
+              e.stopPropagation()
+              onDelete(property)
             }}
             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
@@ -93,7 +145,7 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center text-text-secondary text-sm mb-1">
             <SafeIcon icon={FiDollarSign} className="w-4 h-4 mr-1" />
@@ -114,6 +166,20 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
         </div>
       </div>
 
+      {/* Workflow Action Button */}
+      <div className="border-t border-gray-100 pt-4">
+        <button
+          onClick={handleStartAnalysis}
+          className="w-full bg-primary text-white py-2.5 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center space-x-2 font-medium"
+        >
+          <SafeIcon icon={workflowStatus.icon} className="w-4 h-4" />
+          <span>{workflowStatus.nextLabel}</span>
+        </button>
+        <p className="text-xs text-gray-500 text-center mt-1">
+          {workflowStatus.description}
+        </p>
+      </div>
+
       {property.monthly_cash_flow && (
         <div className="mt-4 pt-4 border-t border-gray-100">
           <div className="flex items-center justify-between text-sm">
@@ -128,7 +194,7 @@ const PropertyCard = ({ property, onEdit, onDelete, onShare }) => {
           </div>
         </div>
       )}
-      
+
       {isSelected && (
         <div className="mt-4 pt-4 border-t border-gray-100">
           <span className="text-xs text-primary font-medium">Currently Selected</span>

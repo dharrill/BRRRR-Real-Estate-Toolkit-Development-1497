@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import SafeIcon from '../../common/SafeIcon'
+import NumberInput from '../../common/NumberInput'
 import * as FiIcons from 'react-icons/fi'
 
 const { FiX, FiSave } = FiIcons
@@ -16,13 +17,11 @@ const PropertyForm = ({ property, onSave, onCancel }) => {
     status: property?.status || 'analyzing',
     notes: property?.notes || '',
   })
-
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-
     try {
       await onSave(formData)
     } catch (error) {
@@ -33,10 +32,7 @@ const PropertyForm = ({ property, onSave, onCancel }) => {
   }
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const statusOptions = [
@@ -116,26 +112,26 @@ const PropertyForm = ({ property, onSave, onCancel }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Purchase Price
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.purchase_price}
-                onChange={(e) => handleChange('purchase_price', e.target.value)}
+                onChange={(value) => handleChange('purchase_price', value)}
+                placeholder="150,000"
+                prefix="$"
+                min={0}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="150000"
-                min="0"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 ARV (After Repair Value)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.arv}
-                onChange={(e) => handleChange('arv', e.target.value)}
+                onChange={(value) => handleChange('arv', value)}
+                placeholder="200,000"
+                prefix="$"
+                min={0}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="200000"
-                min="0"
               />
             </div>
           </div>

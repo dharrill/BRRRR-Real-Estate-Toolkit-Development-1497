@@ -9,11 +9,11 @@ const { FiHome, FiTool, FiDollarSign, FiBarChart3, FiTrendingUp, FiTarget, FiCre
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { currentProperty } = useProperty()
-  
+
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: FiHome, always: true },
   ]
-  
+
   // Only add these links if a property is selected
   const propertyTools = [
     { name: 'Rehab Estimator', href: '/rehab-estimator', icon: FiTool },
@@ -23,7 +23,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Freedom Calculator', href: '/freedom-calculator', icon: FiTarget },
     { name: 'Loan Comparison', href: '/loan-comparison', icon: FiCreditCard },
   ]
-  
+
   if (currentProperty) {
     navigation.push(...propertyTools)
   }
@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div
+        <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
         />
@@ -54,10 +54,13 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Mobile close button */}
           <div className="flex items-center justify-between p-4 lg:hidden">
             <div className="flex items-center space-x-3">
-              <img 
-                src="/src/assets/fulllogo_transparent.png" 
-                alt="The Brrrrothas Logo" 
+              <img
+                src="/fulllogo_transparent.png"
+                alt="The Brrrrothas Logo"
                 className="h-8"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                }}
               />
               <span className="font-semibold text-text-DEFAULT">The Brrrrothas</span>
             </div>
@@ -88,7 +91,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <span>{item.name}</span>
               </NavLink>
             ))}
-            
+
             {!currentProperty && propertyTools.length > 0 && (
               <div className="mt-4 p-4 bg-background-DEFAULT rounded-lg">
                 <p className="text-sm text-text-secondary">

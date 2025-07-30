@@ -29,11 +29,15 @@ const Header = ({ onMenuToggle, isMobileMenuOpen }) => {
             <SafeIcon icon={FiMenu} className="w-5 h-5 text-gray-600" />
           </button>
           <div className="flex items-center space-x-3">
-            <img 
-              src="/src/assets/fulllogo_transparent.png" 
-              alt="The Brrrrothas Logo" 
+            <img
+              src="/fulllogo_transparent.png"
+              alt="The Brrrrothas Logo"
               className="h-10"
+              onError={(e) => {
+                e.target.style.display = 'none'
+              }}
             />
+            <span className="font-semibold text-primary text-lg">The Brrrrothas</span>
           </div>
         </div>
 

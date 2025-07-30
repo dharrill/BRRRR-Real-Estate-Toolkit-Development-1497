@@ -3,8 +3,9 @@ import { motion } from 'framer-motion'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import SafeIcon from '../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
+import NavigationButton from '../components/Common/NavigationButton'
 
-const { FiTrendingUp, FiDollarSign, FiCalendar } = FiIcons
+const { FiTrendingUp, FiDollarSign, FiCalendar, FiTarget } = FiIcons
 
 const PowerOfCompounding = () => {
   const [formData, setFormData] = useState({
@@ -17,12 +18,10 @@ const PowerOfCompounding = () => {
 
   const [chartData, setChartData] = useState([])
   const [summary, setSummary] = useState(null)
+  const [hasCalculation, setHasCalculation] = useState(false)
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const calculateCompounding = () => {
@@ -68,6 +67,8 @@ const PowerOfCompounding = () => {
       totalReturn: finalData.totalReturn,
       totalReturnPercent: ((finalData.totalReturn - initialValue) / initialValue) * 100
     })
+
+    setHasCalculation(true)
   }
 
   useEffect(() => {
@@ -115,7 +116,6 @@ const PowerOfCompounding = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Parameters</h2>
-            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -129,7 +129,6 @@ const PowerOfCompounding = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Initial Monthly Rent
@@ -142,7 +141,6 @@ const PowerOfCompounding = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Annual Appreciation Rate (%)
@@ -156,7 +154,6 @@ const PowerOfCompounding = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Annual Rent Increase (%)
@@ -170,7 +167,6 @@ const PowerOfCompounding = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Investment Term (Years)
@@ -196,23 +192,19 @@ const PowerOfCompounding = () => {
               <h3 className="text-lg font-semibold mb-4">
                 {formData.term}-Year Summary
               </h3>
-              
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span>Initial Investment:</span>
                   <span className="font-semibold">{formatCurrency(summary.initialValue)}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span>Final Property Value:</span>
                   <span className="font-semibold">{formatCurrency(summary.finalValue)}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span>Total Rent Collected:</span>
                   <span className="font-semibold">{formatCurrency(summary.totalRentCollected)}</span>
                 </div>
-                
                 <div className="border-t border-white/20 pt-3 mt-3">
                   <div className="flex justify-between text-lg">
                     <span>Total Return:</span>
@@ -233,40 +225,37 @@ const PowerOfCompounding = () => {
           {/* Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Growth Projection</h2>
-            
             <div style={{ width: '100%', height: 400 }}>
               <ResponsiveContainer>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="year" 
-                    label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                    label={{ value: 'Years', position: 'insideBottom', offset: -5 }} 
                   />
-                  <YAxis 
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                  />
+                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="propertyValue" 
-                    stroke="#3B82F6" 
+                  <Line
+                    type="monotone"
+                    dataKey="propertyValue"
+                    stroke="#3B82F6"
                     strokeWidth={3}
                     name="Property Value"
                     dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalRentCollected" 
-                    stroke="#10B981" 
+                  <Line
+                    type="monotone"
+                    dataKey="totalRentCollected"
+                    stroke="#10B981"
                     strokeWidth={3}
                     name="Total Rent Collected"
                     dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalReturn" 
-                    stroke="#8B5CF6" 
+                  <Line
+                    type="monotone"
+                    dataKey="totalReturn"
+                    stroke="#8B5CF6"
                     strokeWidth={3}
                     name="Total Return"
                     dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
@@ -354,21 +343,29 @@ const PowerOfCompounding = () => {
               <div>
                 <h4 className="font-medium text-blue-800 mb-2">Appreciation Power</h4>
                 <p className="text-blue-700">
-                  Even modest appreciation rates compound significantly over time. A 3% annual rate 
-                  can more than double your property value in 30 years.
+                  Even modest appreciation rates compound significantly over time. A 3% annual rate can more than double your property value in 30 years.
                 </p>
               </div>
               <div>
                 <h4 className="font-medium text-blue-800 mb-2">Rent Growth Impact</h4>
                 <p className="text-blue-700">
-                  Regular rent increases protect against inflation and significantly boost 
-                  total returns over the investment period.
+                  Regular rent increases protect against inflation and significantly boost total returns over the investment period.
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Navigation Button */}
+      {hasCalculation && (
+        <NavigationButton
+          nextStep="freedom-calculator"
+          nextLabel="Go to Freedom Calculator"
+          description="Calculate how many properties you need for financial freedom"
+          icon={FiTarget}
+        />
+      )}
     </div>
   )
 }
