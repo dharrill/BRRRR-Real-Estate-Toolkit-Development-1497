@@ -11,17 +11,22 @@ export default {
       },
       colors: {
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        }
+          DEFAULT: '#000000',        // Black
+          dark: '#111111',
+          light: '#222222',
+        },
+        accent: {
+          DEFAULT: '#999999',        // Light gray for accents
+          dark: '#666666',
+          light: '#cccccc',
+        },
+        background: {
+          DEFAULT: '#f9f9f9',        // Optional light background
+        },
+        text: {
+          DEFAULT: '#1a1a1a',
+          secondary: '#555555',
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -35,8 +40,8 @@ export default {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
-        }
-      }
+        },
+      },
     },
   },
   plugins: [],
