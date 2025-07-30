@@ -4,7 +4,7 @@ import SafeIcon from '../../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
 
-const { FiHome, FiUser, FiLogOut, FiMenu } = FiIcons
+const { FiUser, FiLogOut, FiMenu } = FiIcons
 
 const Header = ({ onMenuToggle, isMobileMenuOpen }) => {
   const { user, signOut } = useAuth()
@@ -14,7 +14,7 @@ const Header = ({ onMenuToggle, isMobileMenuOpen }) => {
   }
 
   return (
-    <motion.header 
+    <motion.header
       className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -28,15 +28,12 @@ const Header = ({ onMenuToggle, isMobileMenuOpen }) => {
           >
             <SafeIcon icon={FiMenu} className="w-5 h-5 text-gray-600" />
           </button>
-          
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <SafeIcon icon={FiHome} className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">The Brrrrothas</h1>
-              <p className="text-xs text-gray-500 -mt-1">Toolkit</p>
-            </div>
+            <img 
+              src="/src/assets/fulllogo_transparent.png" 
+              alt="The Brrrrothas Logo" 
+              className="h-10"
+            />
           </div>
         </div>
 
@@ -44,8 +41,8 @@ const Header = ({ onMenuToggle, isMobileMenuOpen }) => {
           {user && (
             <>
               <div className="hidden sm:flex items-center space-x-2">
-                <SafeIcon icon={FiUser} className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-700">{user.email}</span>
+                <SafeIcon icon={FiUser} className="w-4 h-4 text-text-secondary" />
+                <span className="text-sm text-text-DEFAULT">{user.email}</span>
               </div>
               <button
                 onClick={handleSignOut}

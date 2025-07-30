@@ -23,7 +23,7 @@ export const PropertyProvider = ({ children }) => {
     setLoading(true)
     try {
       const { data, error } = await supabase
-        .from('properties_brrrr')  // Updated table name
+        .from('properties_brrrr')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -42,13 +42,19 @@ export const PropertyProvider = ({ children }) => {
     
     try {
       const { data, error } = await supabase
-        .from('properties_brrrr')  // Updated table name
+        .from('properties_brrrr')
         .insert([{ ...propertyData, user_id: user.id }])
         .select()
         .single()
       
       if (error) throw error
+      
+      // Immediately update the local state with the new property
       setProperties(prev => [data, ...prev])
+      
+      // Automatically set as current property
+      setCurrentProperty(data)
+      
       return { data, error: null }
     } catch (error) {
       console.error('Error creating property:', error)
@@ -59,15 +65,18 @@ export const PropertyProvider = ({ children }) => {
   const updateProperty = async (id, updates) => {
     try {
       const { data, error } = await supabase
-        .from('properties_brrrr')  // Updated table name
+        .from('properties_brrrr')
         .update(updates)
         .eq('id', id)
         .select()
         .single()
       
       if (error) throw error
+      
+      // Update properties list
       setProperties(prev => prev.map(prop => prop.id === id ? data : prop))
       
+      // Update current property if it's the one being edited
       if (currentProperty?.id === id) {
         setCurrentProperty(data)
       }
@@ -82,13 +91,16 @@ export const PropertyProvider = ({ children }) => {
   const deleteProperty = async (id) => {
     try {
       const { error } = await supabase
-        .from('properties_brrrr')  // Updated table name
+        .from('properties_brrrr')
         .delete()
         .eq('id', id)
       
       if (error) throw error
+      
+      // Update properties list
       setProperties(prev => prev.filter(prop => prop.id !== id))
       
+      // Clear current property if it was the one deleted
       if (currentProperty?.id === id) {
         setCurrentProperty(null)
       }

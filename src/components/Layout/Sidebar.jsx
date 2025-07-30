@@ -3,12 +3,19 @@ import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import SafeIcon from '../../common/SafeIcon'
 import * as FiIcons from 'react-icons/fi'
+import { useProperty } from '../../contexts/PropertyContext'
 
 const { FiHome, FiTool, FiDollarSign, FiBarChart3, FiTrendingUp, FiTarget, FiCreditCard, FiX } = FiIcons
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const { currentProperty } = useProperty()
+  
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: FiHome },
+    { name: 'Dashboard', href: '/dashboard', icon: FiHome, always: true },
+  ]
+  
+  // Only add these links if a property is selected
+  const propertyTools = [
     { name: 'Rehab Estimator', href: '/rehab-estimator', icon: FiTool },
     { name: 'MAO Calculator', href: '/mao-calculator', icon: FiDollarSign },
     { name: 'Property Analyzer', href: '/property-analyzer', icon: FiBarChart3 },
@@ -16,6 +23,10 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Freedom Calculator', href: '/freedom-calculator', icon: FiTarget },
     { name: 'Loan Comparison', href: '/loan-comparison', icon: FiCreditCard },
   ]
+  
+  if (currentProperty) {
+    navigation.push(...propertyTools)
+  }
 
   const sidebarVariants = {
     open: { x: 0 },
@@ -26,7 +37,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
         />
@@ -43,10 +54,12 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Mobile close button */}
           <div className="flex items-center justify-between p-4 lg:hidden">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <SafeIcon icon={FiHome} className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-semibold text-gray-900">The Brrrrothas</span>
+              <img 
+                src="/src/assets/fulllogo_transparent.png" 
+                alt="The Brrrrothas Logo" 
+                className="h-8"
+              />
+              <span className="font-semibold text-text-DEFAULT">The Brrrrothas</span>
             </div>
             <button
               onClick={onClose}
@@ -66,8 +79,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-primary-light/10 text-primary border-r-2 border-primary'
+                      : 'text-text-secondary hover:bg-gray-50 hover:text-text-DEFAULT'
                   }`
                 }
               >
@@ -75,11 +88,32 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <span>{item.name}</span>
               </NavLink>
             ))}
+            
+            {!currentProperty && propertyTools.length > 0 && (
+              <div className="mt-4 p-4 bg-background-DEFAULT rounded-lg">
+                <p className="text-sm text-text-secondary">
+                  Select a property from the dashboard to access property tools
+                </p>
+              </div>
+            )}
           </nav>
+
+          {/* Current Property Display */}
+          {currentProperty && (
+            <div className="px-4 py-3 border-t border-b border-gray-200">
+              <div className="text-xs text-text-secondary mb-1">Current Property:</div>
+              <div className="font-medium text-sm text-primary truncate">
+                {currentProperty.address || 'Unnamed Property'}
+              </div>
+              <div className="text-xs text-text-secondary mt-1">
+                {currentProperty.city}, {currentProperty.state}
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="p-4 border-t border-gray-200">
-            <div className="text-xs text-gray-500 text-center">
+            <div className="text-xs text-text-secondary text-center">
               <p>© 2024 The Brrrrothas Toolkit</p>
               <p className="mt-1">Real Estate Investment Tools</p>
             </div>
