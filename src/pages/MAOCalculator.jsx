@@ -192,7 +192,7 @@ const MAOCalculator = () => {
               type="number"
               value={rehabCost}
               onChange={setRehabCost}
-              placeholder="30,000"
+              placeholder={formatCurrency(savedRehabAmount)}
               prefix="$"
               required
             />
