@@ -23,7 +23,6 @@ const MAOCalculator = () => {
   const [customPercentage, setCustomPercentage] = useState(70)
   const [savedRehabAmount, setSavedRehabAmount] = useState(0)
   const [saving, setSaving] = useState(false)
-  
 
   // Validation state
   const [isValid, setIsValid] = useState(false)
@@ -152,6 +151,11 @@ const MAOCalculator = () => {
     return isSelected ? selectedColors[color] : `bg-white hover:bg-gray-50 ${baseColors[color]}`
   }
 
+  // Calculate placeholder display value for rehab input
+  const rehabPlaceholder = savedRehabAmount > 0 
+    ? formatCurrency(savedRehabAmount).replace(/^\$/, '')
+    : '30,000'
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -189,12 +193,11 @@ const MAOCalculator = () => {
 
           <div>
             <WorkflowInput
-              const rehabDisplay = formatCurrency(savedRehabAmount).replace(/^\$/, '')
               label="Rehab Cost Estimate"
               type="number"
               value={rehabCost}
               onChange={setRehabCost}
-              placeholder={rehabDisplay}
+              placeholder={rehabPlaceholder}
               prefix="$"
               required
             />
