@@ -18,7 +18,15 @@ function MAOCalculator({
   const [selectedPercent, setSelectedPercent] = useState(initialValues.selectedPercent || '75');
   const [customPercent, setCustomPercent] = useState(initialValues.customPercent || '');
 
-  // Compute the placeholder for Rehab Cost by stripping "$"
+  // Compute the placeholder for Rehab Cost by stripping
+  const rehabDisplay = formatCurrency(savedRehabAmount).replace(/^\$/, '');
+
+  // Preload rehab estimate into rehabCost input on mount
+  useEffect(() => {
+    if (savedRehabAmount > 0 && !rehabCost) {
+      setRehabCost(savedRehabAmount.toString());
+    }
+  }, [savedRehabAmount]); "$"
   const rehabDisplay = formatCurrency(savedRehabAmount).replace(/^\$/, '');
 
   // Handler to use the saved rehab estimate
