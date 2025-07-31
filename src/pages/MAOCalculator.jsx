@@ -23,6 +23,7 @@ const MAOCalculator = () => {
   const [customPercentage, setCustomPercentage] = useState(70)
   const [savedRehabAmount, setSavedRehabAmount] = useState(0)
   const [saving, setSaving] = useState(false)
+  
 
   // Validation state
   const [isValid, setIsValid] = useState(false)
@@ -188,11 +189,12 @@ const MAOCalculator = () => {
 
           <div>
             <WorkflowInput
+              const rehabDisplay = formatCurrency(savedRehabAmount).replace(/^\$/, '')
               label="Rehab Cost Estimate"
               type="number"
               value={rehabCost}
               onChange={setRehabCost}
-              placeholder={formatCurrency(savedRehabAmount)}
+              placeholder={rehabDisplay}
               prefix="$"
               required
             />
