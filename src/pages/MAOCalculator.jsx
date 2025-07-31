@@ -1,8 +1,11 @@
+// src/pages/MAOCalculator.jsx
+
 import React, { useState, useEffect } from 'react';
-import WorkflowInput from '../components/WorkflowInput';
-import { formatCurrency } from '../utils/formatters';
+import WorkflowInput from '../common/WorkflowInput';
+import SafeIcon from '../common/SafeIcon';
 import { FiRefreshCw } from 'react-icons/fi';
-import SafeIcon from '../components/SafeIcon';
+import { formatCurrency } from '../utils/formatters';
+import WorkflowNavigation from '../common/WorkflowNavigation';
 
 function MAOCalculator({
   savedRehabAmount = 0,
@@ -10,46 +13,46 @@ function MAOCalculator({
   onProceed,
   onBack,
 }) {
-  // State for Rehab Cost Estimate
   const [rehabCost, setRehabCost] = useState(initialValues.rehabCost || '');
-
-  // Other state placeholders (ARV, selectedPercent, customPercent, etc.)
   const [arv, setArv] = useState(initialValues.arv || '');
   const [selectedPercent, setSelectedPercent] = useState(initialValues.selectedPercent || '75');
   const [customPercent, setCustomPercent] = useState(initialValues.customPercent || '');
+  const [maoValue, setMaoValue] = useState('');
 
-  // Compute the placeholder for Rehab Cost by stripping "$"
+  // Strip leading “$” for placeholder
   const rehabDisplay = formatCurrency(savedRehabAmount).replace(/^\$/, '');
 
-  // Handler to use the saved rehab estimate
-  const useRehabEstimate = () => {
-    setRehabCost(savedRehabAmount.toString());
-  };
-
-  // Compute MAO whenever ARV or percentage changes
-  const [maoValue, setMaoValue] = useState('');
+  // Preload rehab estimate on mount
   useEffect(() => {
-    const percent = selectedPercent === 'custom' ? parseFloat(customPercent) : parseFloat(selectedPercent);
-    const arvNum = parseFloat(arv) || 0;
-    if (!isNaN(percent) && percent > 0) {
-      setMaoValue(((percent / 100) * arvNum).toFixed(2));
+    if (savedRehabAmount > 0 && !rehabCost) {
+      setRehabCost(savedRehabAmount.toString());
     }
-  }, [arv, selectedPercent, customPercent]);
+  }, [savedRehabAmount]);
 
-  // Proceed handler
+  // Live‐update MAO whenever inputs change
+  useEffect(() => {
+    const pct = selectedPercent === 'custom'
+      ? parseFloat(customPercent)
+      : parseFloat(selectedPercent);
+    const arvNum = parseFloat(arv) || 0;
+    if (!isNaN(pct) && pct > 0) {
+      setMaoValue(((pct / 100) * arvNum).toFixed(2));
+    }
+  }, [arv, rehabCost, selectedPercent, customPercent]);
+
   const handleProceed = () => {
     onProceed({
       rehabCost,
       arv,
       selectedPercent,
       customPercent,
-      maoValue,
+      finalMao: parseFloat(maoValue),
     });
   };
 
   return (
-    <div className="mao-page p-4">
-      {/* Rehab Cost Estimate Input */}
+    <div className="mao-page p-4 space-y-6">
+      {/* Rehab Cost */}
       <WorkflowInput
         label="Rehab Cost Estimate"
         type="number"
@@ -58,19 +61,6 @@ function MAOCalculator({
         placeholder={rehabDisplay}
         required
       />
-
-      {/* Use Rehab Estimate Button */}
-      {savedRehabAmount > 0 && (
-        <div className="mt-2">
-          <button
-            onClick={useRehabEstimate}
-            className="text-sm bg-green-50 text-green-700 px-3 py-2 rounded-md border border-green-200 hover:bg-green-100 transition-colors flex items-center space-x-2"
-          >
-            <SafeIcon icon={FiRefreshCw} className="w-4 h-4" />
-            <span>Use Rehab Estimate: {formatCurrency(savedRehabAmount)}</span>
-          </button>
-        </div>
-      )}
 
       {/* ARV Input */}
       <WorkflowInput
@@ -82,55 +72,52 @@ function MAOCalculator({
         required
       />
 
-      {/* Percentage Strategy Selector */}
-      <div className="mt-4">
-        <label className="block font-medium mb-2">Select ARV Strategy:</label>
-        <div className="space-y-2">
-          {[70, 75, 80].map((pct) => (
-            <label key={pct} className="flex items-center">
-              <input
-                type="radio"
-                name="percentStrategy"
-                value={pct}
-                checked={selectedPercent === pct.toString()}
-                onChange={() => setSelectedPercent(pct.toString())}
-                className="mr-2"
-              />
-              <span>{`${pct}% Rule`}</span>
-            </label>
-          ))}
-          <label className="flex items-center">
+      {/* ARV % Strategy */}
+      <div className="space-y-2">
+        {[70, 75, 80].map((pct) => (
+          <label key={pct} className="flex items-center">
             <input
               type="radio"
               name="percentStrategy"
-              value="custom"
-              checked={selectedPercent === 'custom'}
-              onChange={() => setSelectedPercent('custom')}
+              value={String(pct)}
+              checked={selectedPercent === String(pct)}
+              onChange={() => setSelectedPercent(String(pct))}
               className="mr-2"
             />
-            <span>Custom Rule</span>
-            {selectedPercent === 'custom' && (
-              <input
-                type="number"
-                value={customPercent}
-                onChange={(e) => setCustomPercent(e.target.value)}
-                placeholder="Enter %"
-                className="ml-2 border rounded p-1 w-20"
-              />
-            )}
+            <span>{`${pct}% Rule`}</span>
           </label>
-        </div>
+        ))}
+        <label className="flex items-center">
+          <input
+            type="radio"
+            name="percentStrategy"
+            value="custom"
+            checked={selectedPercent === 'custom'}
+            onChange={() => setSelectedPercent('custom')}
+            className="mr-2"
+          />
+          <span>Custom Rule</span>
+          {selectedPercent === 'custom' && (
+            <input
+              type="number"
+              value={customPercent}
+              onChange={(e) => setCustomPercent(e.target.value)}
+              placeholder="Enter %"
+              className="ml-2 border rounded p-1 w-20"
+            />
+          )}
+        </label>
       </div>
 
-      {/* Display Computed MAO */}
+      {/* Computed MAO */}
       {maoValue && (
-        <div className="mt-4 font-semibold">
-          Max Allowable Offer: ${maoValue}
+        <div className="font-semibold">
+          Max Allowable Offer: {formatCurrency(parseFloat(maoValue))}
         </div>
       )}
 
-      {/* Footer Navigation */}
-      <div className="mt-6 flex justify-between">
+      {/* Navigation */}
+      <div className="flex justify-between mt-6">
         <button
           onClick={onBack}
           className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
