@@ -3,121 +3,83 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import { useProperty } from './PropertyContext'
 
-const MAOCalculatorContext = createContext({})
+const MAOContext = createContext({})
 
 export const useMAOCalculator = () => {
-  const context = useContext(MAOCalculatorContext)
-  if (!context) {
-    throw new Error('useMAOCalculator must be used within MAOCalculatorProvider')
-  }
-  return context
+  const ctx = useContext(MAOContext)
+  if (!ctx) throw new Error('useMAOCalculator must be inside MAOProvider')
+  return ctx
 }
 
-export const MAOCalculatorProvider = ({ children }) => {
+export const MAOProvider = ({ children }) => {
   const { user } = useAuth()
   const { currentProperty } = useProperty()
   const [maoCalculations, setMaoCalculations] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Fetch MAO calculations for current property
-  const fetchMaoCalculations = async () => {
-    if (!user || !currentProperty) return
-
+  // Fetch saved MAO entries for this property
+  const fetchMAOs = async (propertyId) => {
+    if (!user || !propertyId) return
     setLoading(true)
     try {
       const { data, error } = await supabase
-        .from('mao_calculations_brrrr')
+        .from('mao_calculations_burr')
         .select('*')
-        .eq('property_id', currentProperty.id)
-        .eq('user_id', user.id)
+        .eq('property_id', propertyId)
         .order('created_at', { ascending: false })
-
       if (error) throw error
       setMaoCalculations(data || [])
     } catch (err) {
-      console.error('Error fetching MAO calculations:', err)
+      console.error('Error fetching MAOs:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  // Save MAO calculation
-  const saveMaoCalculation = async (calculationData) => {
-    if (!user || !currentProperty) {
-      return { error: 'User or property not found' }
-    }
-
+  // Save a new MAO calculation
+  const saveMAO = async ({ rehabCost, arv, selectedPercent, customPercent, finalMAO }) => {
+    if (!user || !currentProperty) return { error: 'Missing context' }
+    setLoading(true)
     try {
-      // Check if table exists, if not create it
-      const { data: existingCalculation } = await supabase
-        .from('mao_calculations_brrrr')
-        .select('id')
-        .eq('property_id', currentProperty.id)
-        .eq('user_id', user.id)
-        .limit(1)
-
-      const dataToSave = {
-        property_id: currentProperty.id,
+      const payload = {
         user_id: user.id,
-        arv: calculationData.arv,
-        rehab_cost: calculationData.rehab_cost,
-        selected_percentage: calculationData.selected_percentage,
-        mao_70: calculationData.mao_70,
-        mao_75: calculationData.mao_75,
-        mao_80: calculationData.mao_80,
-        mao_custom: calculationData.mao_custom,
-        final_mao: calculationData.final_mao,
-        created_at: new Date().toISOString()
+        property_id: currentProperty.id,
+        rehab_cost: rehabCost,
+        arv: arv,
+        selected_percent: selectedPercent === 'custom' ? null : selectedPercent,
+        custom_percent: selectedPercent === 'custom' ? customPercent : null,
+        final_mao: finalMAO,
       }
-
-      let result
-      if (existingCalculation && existingCalculation.length > 0) {
-        // Update existing calculation
-        result = await supabase
-          .from('mao_calculations_brrrr')
-          .update(dataToSave)
-          .eq('property_id', currentProperty.id)
-          .eq('user_id', user.id)
-          .select()
-      } else {
-        // Insert new calculation
-        result = await supabase
-          .from('mao_calculations_brrrr')
-          .insert([dataToSave])
-          .select()
-      }
-
-      const { data, error } = result
+      const { data, error } = await supabase
+        .from('mao_calculations_burr')
+        .insert([payload])
+        .single()
       if (error) throw error
-
-      // Update local state
-      await fetchMaoCalculations()
-      return { data: data[0], error: null }
+      // prepend new entry
+      setMaoCalculations((prev) => [data, ...prev])
+      return { data, error: null }
     } catch (err) {
-      console.error('Error saving MAO calculation:', err)
-      return { data: null, error: err.message }
+      console.error('Error saving MAO:', err)
+      return { data: null, error: err }
+    } finally {
+      setLoading(false)
     }
   }
 
-  // Load calculations when property changes
+  // Auto-fetch when currentProperty changes
   useEffect(() => {
-    if (currentProperty) {
-      fetchMaoCalculations()
+    if (currentProperty?.id) {
+      fetchMAOs(currentProperty.id)
     } else {
       setMaoCalculations([])
     }
   }, [currentProperty])
 
-  const value = {
-    maoCalculations,
-    loading,
-    saveMaoCalculation,
-    fetchMaoCalculations,
-  }
-
   return (
-    <MAOCalculatorContext.Provider value={value}>
+    <MAOContext.Provider
+      value={{ maoCalculations, loading, fetchMAOs, saveMAO }}
+    >
       {children}
-    </MAOCalculatorContext.Provider>
+    </MAOContext.Provider>
   )
 }
