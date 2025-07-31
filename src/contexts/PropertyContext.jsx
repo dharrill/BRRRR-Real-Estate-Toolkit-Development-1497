@@ -18,6 +18,10 @@ export const PropertyProvider = ({ children }) => {
   const [currentProperty, setCurrentProperty] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  // Analysis scenarios state
+  const [analyses, setAnalyses] = useState([])
+  const [analysisLoading, setAnalysisLoading] = useState(false)
+
   const fetchProperties = async () => {
     if (!user) return
     setLoading(true)
@@ -27,7 +31,6 @@ export const PropertyProvider = ({ children }) => {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-      
       if (error) throw error
       setProperties(data || [])
     } catch (error) {
@@ -39,22 +42,15 @@ export const PropertyProvider = ({ children }) => {
 
   const createProperty = async (propertyData) => {
     if (!user) return { error: 'User not authenticated' }
-    
     try {
       const { data, error } = await supabase
         .from('properties_brrrr')
         .insert([{ ...propertyData, user_id: user.id }])
         .select()
         .single()
-      
       if (error) throw error
-      
-      // Immediately update the local state with the new property
       setProperties(prev => [data, ...prev])
-      
-      // Automatically set as current property
       setCurrentProperty(data)
-      
       return { data, error: null }
     } catch (error) {
       console.error('Error creating property:', error)
@@ -70,17 +66,9 @@ export const PropertyProvider = ({ children }) => {
         .eq('id', id)
         .select()
         .single()
-      
       if (error) throw error
-      
-      // Update properties list
       setProperties(prev => prev.map(prop => prop.id === id ? data : prop))
-      
-      // Update current property if it's the one being edited
-      if (currentProperty?.id === id) {
-        setCurrentProperty(data)
-      }
-      
+      if (currentProperty?.id === id) setCurrentProperty(data)
       return { data, error: null }
     } catch (error) {
       console.error('Error updating property:', error)
@@ -94,21 +82,53 @@ export const PropertyProvider = ({ children }) => {
         .from('properties_brrrr')
         .delete()
         .eq('id', id)
-      
       if (error) throw error
-      
-      // Update properties list
       setProperties(prev => prev.filter(prop => prop.id !== id))
-      
-      // Clear current property if it was the one deleted
-      if (currentProperty?.id === id) {
-        setCurrentProperty(null)
-      }
-      
+      if (currentProperty?.id === id) setCurrentProperty(null)
       return { error: null }
     } catch (error) {
       console.error('Error deleting property:', error)
       return { error }
+    }
+  }
+
+  // Fetch analysis scenarios for a given property
+  const fetchAnalyses = async (propertyId) => {
+    if (!user || !propertyId) return
+    setAnalysisLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('property_analysis')
+        .select('*')
+        .eq('property_id', propertyId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setAnalyses(data || [])
+    } catch (error) {
+      console.error('Error fetching analyses:', error)
+    } finally {
+      setAnalysisLoading(false)
+    }
+  }
+
+  // Save a new analysis scenario
+  const saveAnalysis = async (analysis) => {
+    if (!user || !currentProperty) return { error: 'Missing context' }
+    setAnalysisLoading(true)
+    try {
+      const payload = { ...analysis, property_id: currentProperty.id, user_id: user.id }
+      const { data, error } = await supabase
+        .from('property_analysis')
+        .insert([payload])
+        .single()
+      if (error) throw error
+      setAnalyses(prev => [data, ...prev])
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error saving analysis:', error)
+      return { data: null, error }
+    } finally {
+      setAnalysisLoading(false)
     }
   }
 
@@ -118,6 +138,7 @@ export const PropertyProvider = ({ children }) => {
     } else {
       setProperties([])
       setCurrentProperty(null)
+      setAnalyses([])
     }
   }, [user])
 
@@ -130,6 +151,10 @@ export const PropertyProvider = ({ children }) => {
     updateProperty,
     deleteProperty,
     fetchProperties,
+    analyses,
+    analysisLoading,
+    fetchAnalyses,
+    saveAnalysis,
   }
 
   return (
